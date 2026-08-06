@@ -1,6 +1,8 @@
+import { useState } from 'react';
 import { Calendar, CalendarOff } from 'lucide-react';
 import { ScreenShell } from '../components/ScreenShell';
 import { Card } from '../components/Card';
+import { Button } from '../components/Button';
 import { useAppStore } from '../store/useAppStore';
 import { useThemeContext } from '../theme/ThemeProvider';
 import type { ThemeMode } from '../theme/tokens';
@@ -15,10 +17,12 @@ const THEME_MODES: { value: ThemeMode; label: string; hint: string }[] = [
 export function Profile() {
   const settings = useAppStore((s) => s.settings);
   const setThemeMode = useAppStore((s) => s.setThemeMode);
-  const setGoToContact = useAppStore((s) => s.setGoToContact);
+  const addContact = useAppStore((s) => s.addContact);
+  const removeContact = useAppStore((s) => s.removeContact);
   const toggleGcal = useAppStore((s) => s.toggleGcal);
   const setTargetBedtime = useAppStore((s) => s.setTargetBedtime);
   const theme = useThemeContext();
+  const [newContactText, setNewContactText] = useState('');
 
   return (
     <ScreenShell>
@@ -51,14 +55,50 @@ export function Profile() {
 
         <Card>
           <span className="kicker">Text-someone nudge</span>
-          <div className="title">Go-to contact</div>
-          <input
-            className="input"
-            style={{ width: '100%', textAlign: 'left' }}
-            placeholder="Phone number or @handle"
-            value={settings.goToContact}
-            onChange={(e) => setGoToContact(e.target.value)}
-          />
+          <div className="title">Go-to contacts</div>
+          <p style={{ margin: '2px 0 10px', fontSize: 12, color: 'var(--text2)' }}>
+            One is picked per day, rotating through the list below.
+          </p>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 8 }}>
+            {settings.contacts.map((c, i) => (
+              <span
+                key={c + i}
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 6,
+                  padding: '4px 8px 4px 10px',
+                  borderRadius: 999,
+                  background: 'var(--accent-tint)',
+                  fontSize: 12,
+                  color: 'var(--text)',
+                }}
+              >
+                {c}
+                <span onClick={() => removeContact(i)} style={{ cursor: 'pointer', color: 'var(--text2)', fontWeight: 600 }}>
+                  ×
+                </span>
+              </span>
+            ))}
+            {settings.contacts.length === 0 && <span style={{ fontSize: 12, color: 'var(--text3)' }}>No contacts yet</span>}
+          </div>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <input
+              className="input"
+              style={{ flex: 1, textAlign: 'left' }}
+              placeholder="Phone number or @handle"
+              value={newContactText}
+              onChange={(e) => setNewContactText(e.target.value)}
+            />
+            <Button
+              onClick={() => {
+                addContact(newContactText);
+                setNewContactText('');
+              }}
+            >
+              Add
+            </Button>
+          </div>
         </Card>
 
         <Card>
