@@ -24,3 +24,8 @@ export const QUOTES: Quote[] = [
 export function quoteOfTheDay(now = new Date()): Quote {
   return QUOTES[dayOfYear(now) % QUOTES.length];
 }
+
+/** Same deterministic day-of-year rotation, generalized to any list (e.g. a rotation of contacts). Null if the list is empty. */
+export function pickOfTheDay<T>(list: T[], now = new Date()): T | null {
+  return list.length ? list[dayOfYear(now) % list.length] : null;
+}

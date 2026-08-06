@@ -10,7 +10,7 @@ import { Button } from '../components/Button';
 import { useAppStore } from '../store/useAppStore';
 import { useTodayLog, useStreak, useMoodTrend, useMoodCorrelations, useConsistency7 } from '../store/selectors';
 import { todayISO, formatHeaderDate } from '../lib/date';
-import { quoteOfTheDay } from '../lib/quotes';
+import { quoteOfTheDay, pickOfTheDay } from '../lib/quotes';
 import { MOOD_SCALE, ENERGY_SCALE, moodLabelToValue, moodValueToLabel, energyValueToLabel } from '../lib/correlation';
 import type { DayType } from '../store/types';
 
@@ -36,12 +36,15 @@ export function Home() {
   const selectMidday = useAppStore((s) => s.selectMidday);
   const toggleContactInput = useAppStore((s) => s.toggleContactInput);
   const dismissTextPrompt = useAppStore((s) => s.dismissTextPrompt);
-  const setGoToContact = useAppStore((s) => s.setGoToContact);
+  const addContact = useAppStore((s) => s.addContact);
+  const removeContact = useAppStore((s) => s.removeContact);
   const toggleGcal = useAppStore((s) => s.toggleGcal);
 
   const [gratitudeDraft, setGratitudeDraft] = useState(log.gratitude ?? '');
+  const [newContactText, setNewContactText] = useState('');
 
   const quote = quoteOfTheDay();
+  const todaysContact = pickOfTheDay(settings.contacts);
   const doneCount = morningRoutine.filter((s) => log.morningDone[s.id]).length;
   const totalCount = morningRoutine.length;
 
@@ -50,7 +53,7 @@ export function Home() {
 
   function openTextPrompt() {
     const msg = encodeURIComponent('Good morning! 😊 Thinking of you! Hope you have a great day.');
-    const contact = settings.goToContact.trim();
+    const contact = (todaysContact ?? '').trim();
     window.location.href = contact ? `sms:${contact}?&body=${msg}` : `sms:?&body=${msg}`;
     dismissTextPrompt();
   }
@@ -99,21 +102,60 @@ export function Home() {
             <div style={{ flex: 1 }}>
               <div style={{ fontSize: 14.5, fontWeight: 600, color: 'var(--text)' }}>Text someone good morning</div>
               <p style={{ margin: '4px 0 0', fontSize: 12.5, color: 'var(--text2)' }}>A quick hello can start the day better than a scroll.</p>
+              {todaysContact && (
+                <p style={{ margin: '6px 0 0', fontSize: 12, color: 'var(--text3)' }}>
+                  Today&rsquo;s pick: <span style={{ fontWeight: 600, color: 'var(--text)' }}>{todaysContact}</span>
+                </p>
+              )}
               {ui.showContactInput && (
-                <input
-                  className="input"
-                  style={{ width: '100%', marginTop: 10, textAlign: 'left' }}
-                  placeholder="Go-to contact (phone or @handle, optional)"
-                  value={settings.goToContact}
-                  onChange={(e) => setGoToContact(e.target.value)}
-                />
+                <div style={{ marginTop: 10 }}>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 8 }}>
+                    {settings.contacts.map((c, i) => (
+                      <span
+                        key={c + i}
+                        style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: 6,
+                          padding: '4px 8px 4px 10px',
+                          borderRadius: 999,
+                          background: 'var(--accent-tint)',
+                          fontSize: 12,
+                          color: 'var(--text)',
+                        }}
+                      >
+                        {c}
+                        <span onClick={() => removeContact(i)} style={{ cursor: 'pointer', color: 'var(--text2)', fontWeight: 600 }}>
+                          ×
+                        </span>
+                      </span>
+                    ))}
+                  </div>
+                  <div style={{ display: 'flex', gap: 8 }}>
+                    <input
+                      className="input"
+                      style={{ flex: 1, textAlign: 'left' }}
+                      placeholder="Add a contact (phone or @handle)"
+                      value={newContactText}
+                      onChange={(e) => setNewContactText(e.target.value)}
+                    />
+                    <Button
+                      onClick={() => {
+                        addContact(newContactText);
+                        setNewContactText('');
+                      }}
+                    >
+                      Add
+                    </Button>
+                  </div>
+                </div>
               )}
               <div style={{ display: 'flex', gap: 14, alignItems: 'center', marginTop: 10 }}>
                 <span onClick={openTextPrompt} style={{ fontSize: 13, fontWeight: 600, color: 'var(--accent)', cursor: 'pointer' }}>
                   Text someone →
                 </span>
                 <span onClick={toggleContactInput} style={{ fontSize: 11, color: 'var(--text2)', textDecoration: 'underline', cursor: 'pointer' }}>
-                  Set go-to contact
+                  Manage rotation
                 </span>
                 <span onClick={dismissTextPrompt} style={{ fontSize: 11, color: 'var(--text2)', cursor: 'pointer', marginLeft: 'auto' }}>
                   Dismiss

@@ -50,7 +50,8 @@ interface AppState {
   // Settings
   setThemeMode: (mode: Settings['themeMode']) => void;
   setWidgetContent: (content: Settings['widgetContent']) => void;
-  setGoToContact: (contact: string) => void;
+  addContact: (contact: string) => void;
+  removeContact: (index: number) => void;
   toggleGcal: () => void;
   setTargetBedtime: (hour: number) => void;
 
@@ -101,7 +102,7 @@ export const useAppStore = create<AppState>()(
         displayName: 'Jé',
         themeMode: 'automatic',
         widgetContent: 'streak-remaining',
-        goToContact: '',
+        contacts: [],
         gcalConnected: false,
         targetBedtimeHour: 22.5,
       },
@@ -186,7 +187,16 @@ export const useAppStore = create<AppState>()(
 
       setThemeMode: (mode) => set((state) => ({ settings: { ...state.settings, themeMode: mode } })),
       setWidgetContent: (content) => set((state) => ({ settings: { ...state.settings, widgetContent: content } })),
-      setGoToContact: (contact) => set((state) => ({ settings: { ...state.settings, goToContact: contact } })),
+      addContact: (contact) =>
+        set((state) => {
+          const trimmed = contact.trim();
+          if (!trimmed) return {};
+          return { settings: { ...state.settings, contacts: [...state.settings.contacts, trimmed] } };
+        }),
+      removeContact: (index) =>
+        set((state) => ({
+          settings: { ...state.settings, contacts: state.settings.contacts.filter((_, i) => i !== index) },
+        })),
       toggleGcal: () => set((state) => ({ settings: { ...state.settings, gcalConnected: !state.settings.gcalConnected } })),
       setTargetBedtime: (hour) => set((state) => ({ settings: { ...state.settings, targetBedtimeHour: hour } })),
 
