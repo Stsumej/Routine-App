@@ -38,7 +38,6 @@ export interface Settings {
   widgetContent: WidgetContent;
   /** Rotation of go-to contacts for the "text someone good morning" nudge — one picked per day. */
   contacts: string[];
-  gcalConnected: boolean;
   /** Decimal hour, e.g. 22.5 = 10:30 PM. User-adjustable from Profile. */
   targetBedtimeHour: number;
 }

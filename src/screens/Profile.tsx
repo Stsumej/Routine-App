@@ -5,6 +5,7 @@ import { Card } from '../components/Card';
 import { Button } from '../components/Button';
 import { useAppStore } from '../store/useAppStore';
 import { useThemeContext } from '../theme/ThemeProvider';
+import { useGoogleCalendarContext } from '../lib/GoogleCalendarProvider';
 import type { ThemeMode } from '../theme/tokens';
 import { hourDecimalToTimeInput, timeInputToHourDecimal } from '../lib/date';
 
@@ -19,9 +20,9 @@ export function Profile() {
   const setThemeMode = useAppStore((s) => s.setThemeMode);
   const addContact = useAppStore((s) => s.addContact);
   const removeContact = useAppStore((s) => s.removeContact);
-  const toggleGcal = useAppStore((s) => s.toggleGcal);
   const setTargetBedtime = useAppStore((s) => s.setTargetBedtime);
   const theme = useThemeContext();
+  const gcal = useGoogleCalendarContext();
   const [newContactText, setNewContactText] = useState('');
 
   return (
@@ -90,14 +91,7 @@ export function Profile() {
               value={newContactText}
               onChange={(e) => setNewContactText(e.target.value)}
             />
-            <Button
-              onClick={() => {
-                addContact(newContactText);
-                setNewContactText('');
-              }}
-            >
-              Add
-            </Button>
+            <Button onClick={() => { addContact(newContactText); setNewContactText(''); }}>Add</Button>
           </div>
         </Card>
 
@@ -112,7 +106,7 @@ export function Profile() {
             onChange={(e) => e.target.value && setTargetBedtime(timeInputToHourDecimal(e.target.value))}
           />
           <p style={{ fontSize: 12, color: 'var(--text2)', marginTop: 8, marginBottom: 0 }}>
-            Drives the &ldquo;On track&rdquo; badge on the Night screen&rsquo;s bedtime goal card.
+            Drives the &ldquo;On track&rdquo; badge on the bedtime goal card.
           </p>
         </Card>
 
@@ -122,17 +116,23 @@ export function Profile() {
             <div>
               <div style={{ fontSize: 14, fontWeight: 500, color: 'var(--text)' }}>Google Calendar</div>
               <p style={{ margin: '2px 0 0', fontSize: 12, color: 'var(--text2)', maxWidth: 240 }}>
-                Not yet functional — this is a demo toggle only. Connecting it here does not sync real events.
+                {gcal.supported
+                  ? gcal.connected
+                    ? 'Connected — events on the Home screen refresh automatically.'
+                    : 'Sign in to show your real events on the Home screen.'
+                  : "Not configured yet — needs a Google OAuth client ID."}
               </p>
             </div>
             <button
               type="button"
-              onClick={toggleGcal}
+              onClick={gcal.connected ? gcal.disconnect : gcal.connect}
+              disabled={!gcal.supported || gcal.connecting}
               style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'none', border: 'none', cursor: 'pointer', padding: 0, font: 'inherit', flex: 'none' }}
             >
-              {settings.gcalConnected ? <Calendar size={18} color="var(--accent-mid)" /> : <CalendarOff size={18} color="var(--text2)" />}
+              {gcal.connected ? <Calendar size={18} color="var(--accent-mid)" /> : <CalendarOff size={18} color="var(--text2)" />}
             </button>
           </div>
+          {gcal.error && <p style={{ margin: '8px 0 0', fontSize: 11, color: 'var(--accent)' }}>{gcal.error}</p>}
         </Card>
       </div>
     </ScreenShell>

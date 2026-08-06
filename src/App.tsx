@@ -1,11 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
 import { Routes, Route, useLocation } from 'react-router-dom';
 import { ThemeProvider } from './theme/ThemeProvider';
+import { GoogleCalendarProvider } from './lib/GoogleCalendarProvider';
 import { useStoreHydrated } from './store/useHydrated';
 import { ScreenShell } from './components/ScreenShell';
 import { SkeletonStack } from './components/Skeleton';
 import { Home } from './screens/Home';
-import { Night } from './screens/Night';
 import { Insights } from './screens/Insights';
 import { Reflections } from './screens/Reflections';
 import { RoutineBuilder } from './screens/RoutineBuilder';
@@ -13,7 +13,6 @@ import { Profile } from './screens/Profile';
 
 const ROUTE_DEPTH: Record<string, number> = {
   '/': 0,
-  '/night': 0,
   '/insights': 0,
   '/profile': 0,
   '/reflections': 1,
@@ -31,7 +30,6 @@ function AppRoutes() {
     <div key={location.pathname} className={`route-enter${back ? ' route-enter--back' : ''}`}>
       <Routes location={location}>
         <Route path="/" element={<Home />} />
-        <Route path="/night" element={<Night />} />
         <Route path="/insights" element={<Insights />} />
         <Route path="/reflections" element={<Reflections />} />
         <Route path="/routines/builder" element={<RoutineBuilder />} />
@@ -52,13 +50,15 @@ function App() {
 
   return (
     <ThemeProvider>
-      {hydrated && minSplashElapsed ? (
-        <AppRoutes />
-      ) : (
-        <ScreenShell tabBar={false}>
-          <SkeletonStack />
-        </ScreenShell>
-      )}
+      <GoogleCalendarProvider>
+        {hydrated && minSplashElapsed ? (
+          <AppRoutes />
+        ) : (
+          <ScreenShell tabBar={false}>
+            <SkeletonStack />
+          </ScreenShell>
+        )}
+      </GoogleCalendarProvider>
     </ThemeProvider>
   );
 }

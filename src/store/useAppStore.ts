@@ -52,7 +52,6 @@ interface AppState {
   setWidgetContent: (content: Settings['widgetContent']) => void;
   addContact: (contact: string) => void;
   removeContact: (index: number) => void;
-  toggleGcal: () => void;
   setTargetBedtime: (hour: number) => void;
 
   // Ephemeral session UI state
@@ -103,7 +102,6 @@ export const useAppStore = create<AppState>()(
         themeMode: 'automatic',
         widgetContent: 'streak-remaining',
         contacts: [],
-        gcalConnected: false,
         targetBedtimeHour: 22.5,
       },
       ui: {
@@ -197,7 +195,6 @@ export const useAppStore = create<AppState>()(
         set((state) => ({
           settings: { ...state.settings, contacts: state.settings.contacts.filter((_, i) => i !== index) },
         })),
-      toggleGcal: () => set((state) => ({ settings: { ...state.settings, gcalConnected: !state.settings.gcalConnected } })),
       setTargetBedtime: (hour) => set((state) => ({ settings: { ...state.settings, targetBedtimeHour: hour } })),
 
       selectMidday: (choice) => set((state) => ({ ui: { ...state.ui, middayChoice: choice, middayDismissed: true } })),
